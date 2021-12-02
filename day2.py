@@ -1,3 +1,5 @@
+from day1 import get_mode
+
 class Submarine_pt1:
 
     def __init__(self, horizontal: int = 0, depth: int = 0):
@@ -86,10 +88,12 @@ def move_pt2(submarine, instructions):
     return submarine
 
 
-def main(mode=1):
+def main():
 
-    path = './data/input_day_2_1.txt'
+    path = './data/input_day_2.txt'
     instructions = open_file(path)
+
+    mode = get_mode()
 
     if mode == 1:
         submarine = Submarine_pt1()
@@ -115,4 +119,4 @@ def main(mode=1):
 
 
 if __name__ == '__main__':
-    main(mode=2)
+    main()
