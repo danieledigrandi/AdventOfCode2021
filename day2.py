@@ -1,5 +1,6 @@
 from day1 import get_mode
 
+
 class Submarine_pt1:
 
     def __init__(self, horizontal: int = 0, depth: int = 0):
@@ -58,7 +59,7 @@ def open_file(path):
     return instructions
 
 
-def move_pt1(submarine, instructions):
+def move(submarine, instructions, class_):
 
     for instr in instructions:
 
@@ -67,22 +68,7 @@ def move_pt1(submarine, instructions):
         # The 2 lines of code below do exactly the same thing, but now is parametrized
         # for any possible value of instr[0]
 
-        class_method = getattr(Submarine_pt1, instr[0])
-        class_method(submarine, instr[1])
-
-    return submarine
-
-
-def move_pt2(submarine, instructions):
-
-    for instr in instructions:
-
-        # Here, call the method directly with the instance contained in instr[0]
-        # For example, if instr[0] == 'forward', is like writing submarine.forward(instr[1])
-        # The 2 lines of code below do exactly the same thing, but now is parametrized
-        # for any possible value of instr[0]
-
-        class_method = getattr(Submarine_pt2, instr[0])
+        class_method = getattr(class_, instr[0])
         class_method(submarine, instr[1])
 
     return submarine
@@ -98,7 +84,7 @@ def main():
     if mode == 1:
         submarine = Submarine_pt1()
 
-        submarine_moved = move_pt1(submarine, instructions)
+        submarine_moved = move(submarine, instructions, Submarine_pt1)
 
         result = submarine_moved.horizontal * submarine_moved.depth
 
@@ -109,7 +95,7 @@ def main():
     elif mode == 2:
         submarine = Submarine_pt2()
 
-        submarine_moved = move_pt2(submarine, instructions)
+        submarine_moved = move(submarine, instructions, Submarine_pt2)
 
         result = submarine_moved.horizontal * submarine_moved.depth
 
