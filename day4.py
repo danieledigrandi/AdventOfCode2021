@@ -69,6 +69,7 @@ def open_file(path):
 
     lines.remove(lines[0])  # remove the random numbers
     lines.remove(lines[0])  # remove the \n immediately after
+    lines.append('\n')  # add a final \n to acquire also the last board
 
     board_list = []
     board_rows = []
