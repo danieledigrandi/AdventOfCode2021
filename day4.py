@@ -103,7 +103,6 @@ def main():
     mode = get_mode()
 
     if mode == 1:
-
         id_winner = -1
         win = False
 
@@ -128,7 +127,6 @@ def main():
         print("Final score:", result)
 
     elif mode == 2:
-
         id_last_winner = -1
 
         board_list_win = [board.win for board in board_list]
