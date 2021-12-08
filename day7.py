@@ -59,9 +59,9 @@ def main():
         # In the second part, it is possible to find the optimal horizontal by averaging the
         # positions of the crabs. Since the average is a floating point number and we are searching
         # for an integer number, the fuel answer can be found either by rounding down or rounding up.
-        # The fastest way for this challenge, is to print both of them and try to input both
-        # in the website to see which one is correct.
-        # For my puzzle input: the correct one was rounding down.
+        # Then, we narrowed down the search of the possible optimum values to only these two numbers.
+        # Hence, by checking which position produces the least sum of distances value, this position
+        # is the optimum one.
 
         mean = sum(crabs) / len(crabs)
         mean_low = int(mean)
@@ -73,8 +73,12 @@ def main():
         sum_low = sum(distances_low)
         sum_high = sum(distances_high)
 
-        print(f"Optimum horizontal position can either be: {mean_low} or {mean_high}")
-        print(f"Minimum total fuel cost for {mean_low} is {sum_low}, for {mean_high} is {sum_high}")
+        if sum_low < sum_high:
+            print(f"Optimum horizontal position is: {mean_low}")
+            print(f"Minimum total fuel cost for {mean_low} is {sum_low}")
+        else:
+            print(f"Optimum horizontal position is: {mean_high}")
+            print(f"Minimum total fuel cost for {mean_high} is {sum_high}")
 
 
 if __name__ == '__main__':
