@@ -73,7 +73,7 @@ class Paper:
                 if [pos_x, pos_y] in self.dots:
                     string += '#'
                 else:
-                    string += '.'
+                    string += ' '
             print(string)
 
     def count_dots(self):
