@@ -16,15 +16,16 @@ def open_file(path):
 
 def create_graph(cavern_raw):
 
-    # Due to the nature of the problem, the graph must be a directed multi graph,
-    # that is, a directed graph that can have multiple edges (with different weights)
-    # between two nodes.
+    # Due to the nature of the problem, the graph must be directed.
+    # Hence, there could be an edge from (0, 0) to (0, 1) with a weight value,
+    # and an edge from (0, 1) to (0, 0) with a different weight value.
 
-    cavern = nx.MultiDiGraph()
+    cavern = nx.DiGraph()
 
     for i in range(len(cavern_raw)):
         for j in range(len(cavern_raw[i])):
             cavern.add_node((i, j))
+
             if j > 0:
                 cavern.add_edge((i, j), (i, j - 1), weight=cavern_raw[i][j])
                 cavern.add_edge((i, j - 1), (i, j), weight=cavern_raw[i][j - 1])
@@ -37,15 +38,9 @@ def create_graph(cavern_raw):
 
 def solve_part1(cavern, cavern_raw):
 
-    p = nx.shortest_path(cavern, source=(0, 0), target=((len(cavern_raw) - 1), (len(cavern_raw[0]) - 1)), weight="weight")
+    p = nx.dijkstra_path(cavern, source=(0, 0), target=((len(cavern_raw) - 1), (len(cavern_raw[0]) - 1)))
 
     risk = 0
-
-    print(p)
-
-    risks = [cavern_raw[i[0]][i[1]] for i in p]
-
-    print(risks)
 
     for i in p:
         # as said in the puzzle, never count the first position
@@ -57,11 +52,13 @@ def solve_part1(cavern, cavern_raw):
 
 def create_complete_map(cavern_raw):
 
+    original_length = len(cavern_raw[0])
+
     true_cavern = copy.deepcopy(cavern_raw)
 
     # expand the rows
     for _ in range(4):
-        for j in range(len(cavern_raw[0])):
+        for j in range(len(cavern_raw[0]) - original_length, len(cavern_raw[0])):
             for i in range(len(cavern_raw)):
                 if cavern_raw[i][j] < 9:
                     true_cavern[i].append(cavern_raw[i][j] + 1)
@@ -72,7 +69,7 @@ def create_complete_map(cavern_raw):
 
     # expand the columns
     for _ in range(4):
-        for i in range(len(cavern_raw)):
+        for i in range(len(cavern_raw) - original_length, len(cavern_raw)):
             new_line = []
             for j in range(len(cavern_raw[i])):
                 if cavern_raw[i][j] < 9:
@@ -101,7 +98,6 @@ def draw_graph(graph, mode):
 
 def main():
     path = './data/input_day_15.txt'
-    #path = './data/prova.txt'
 
     cavern_raw = open_file(path)
 
@@ -115,13 +111,10 @@ def main():
 
     elif mode == 2:
         true_cavern = create_complete_map(cavern_raw)
-        print("here1")
         true_cavern_graph = create_graph(true_cavern)
-        print("here2")
         risk = solve_part1(true_cavern_graph, true_cavern)
 
         print("Lowest total risk:", risk)
-
 
 
 if __name__ == '__main__':
