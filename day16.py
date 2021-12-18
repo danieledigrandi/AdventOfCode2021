@@ -1,163 +1,133 @@
-class Packet:
+from day1 import get_mode
 
-    binary = ''
 
-    def __init__(self):
+def literal_packet(pack):
 
-        self.version = None
-        self.type_id = None
-        # type_id = 4 -> literal
-        # type_id != 4 -> operator
+    i = 0
+    packet = 0
 
-        # if literal:
-        self.number_represented = None
-        self.num_processed_bits = None
+    while True:
+        label = pack[i]
+        i += 1
+        packet = packet << 4 | (int(pack[i:i + 4], 2))
+        i += 4
 
-        # if operator:
-        self.length_type_id = None
-        self.length_subpackets = None
-        self.number_subpackets = None
+        if label == "0":
+            break
 
-    def initialise(self):
+    return i, packet
 
-        self.version = int(Packet.binary[:3], 2)
-        self.type_id = int(Packet.binary[3:6], 2)
-        Packet.binary = Packet.binary[6:]
 
-    def decode_literal_packet(self):
-        # if needed, the function save the number of bits that were processed by this function
+def find_packets(message):
+    global version_sum
+    packet = 0
+    idx = 0
 
-        if self.type_id != 4:
-            raise Exception("Error! Can not use decode_literal_packet on a NON literal packet!")
+    version = int(message[idx:3], 2)
+    version_sum += version
+    idx += 3
+    type_id = int(message[idx:idx + 3], 2)
+    idx += 3
+
+    if type_id == 4:  # literal packet
+        i, packet = literal_packet(message[idx:])
+        idx += i
+
+    else:
+        length_type_id = message[idx]
+        idx += 1
+        packs = []
+
+        if length_type_id == "0":
+            sub_length = int(message[idx:idx + 15], 2)
+            idx += 15
+            k = idx + sub_length
+
+            while idx < k - 6:
+                j, p = find_packets(message[idx:idx + k])
+                idx += j
+                packs.append(p)
+
         else:
-            num_processed_bits = 6
-            number = ''
-            found = False
-            while not found:
-                found = True if Packet.binary[0] == '0' else False
-                number += Packet.binary[1:5]
-                Packet.binary = Packet.binary[5:]
-                num_processed_bits += 5
+            sub_length = int(message[idx:idx + 11], 2)
+            idx += 11
 
-            final_number = int(number, 2)
+            for p in range(sub_length):
+                j, p = find_packets(message[idx:])
+                idx += j
+                packs.append(p)
 
-            self.number_represented = final_number
+        if type_id == 0:
+            packet = sum(packs)
 
-        self.num_processed_bits = num_processed_bits
+        elif type_id == 1:
+            packet = 1
+            for p in packs:
+                packet *= p
 
-    def get_length_type_id(self):
+        elif type_id == 2:
+            packet = min(packs)
 
-        self.length_type_id = int(Packet.binary[0])
-        Packet.binary = Packet.binary[1:]
+        elif type_id == 3:
+            packet = max(packs)
+
+        elif type_id == 5:
+            packet = int(packs[0] > packs[1])
+
+        elif type_id == 6:
+            packet = int(packs[0] < packs[1])
+
+        elif type_id == 7:
+            packet = int(packs[0] == packs[1])
+
+    return idx, packet
 
 
 def open_file(path):
 
     with open(path, 'r') as f:
-        lines = f.readlines()
+        hexadecimal = [x for x in f.readline().strip()]
 
-    hexadecimal = lines[0]
+    hex_to_bin = {
+        "0": "0000",
+        "1": "0001",
+        "2": "0010",
+        "3": "0011",
+        "4": "0100",
+        "5": "0101",
+        "6": "0110",
+        "7": "0111",
+        "8": "1000",
+        "9": "1001",
+        "A": "1010",
+        "B": "1011",
+        "C": "1100",
+        "D": "1101",
+        "E": "1110",
+        "F": "1111"
+    }
 
-    return hexadecimal
-
-
-def to_binary(hexadecimal):
-
-    mapping = {'0': '0000',
-               '1': '0001',
-               '2': '0010',
-               '3': '0011',
-               '4': '0100',
-               '5': '0101',
-               '6': '0110',
-               '7': '0111',
-               '8': '1000',
-               '9': '1001',
-               'A': '1010',
-               'B': '1011',
-               'C': '1100',
-               'D': '1101',
-               'E': '1110',
-               'F': '1111'
-               }
-
-    binary = ''
-    for number in hexadecimal:
-        binary += mapping[number]
+    binary = "".join([hex_to_bin[digit] for digit in hexadecimal])
 
     return binary
 
 
-def decode(packet):
-
-    if all(packet.binary) == '0':
-        return
-    else:
-        print("1", Packet.binary)
-        packet.initialise()
-        print("2", Packet.binary)
-
-        if packet.type_id == 4:
-
-            packet.decode_literal_packet()
-
-        else:
-            print("3", Packet.binary)
-            packet.get_length_type_id()
-            print("4", Packet.binary)
-
-            if packet.length_type_id == 0:
-                packet.length_subpackets = int(Packet.binary[:15], 2)
-                Packet.binary = Packet.binary[15:]
-                print("5", Packet.binary)
-
-                tot_processed_bits = 0
-                while tot_processed_bits < packet.length_subpackets:
-                    new_packet = Packet()
-                    decode(new_packet)
-                    tot_processed_bits += new_packet.num_processed_bits
-
-            elif packet.length_type_id == 1:
-                packet.number_subpackets = int(Packet.binary[:11], 2)
-                Packet.binary = Packet.binary[11:]
-
-                tot_processed_packets = 0
-                while tot_processed_packets < packet.number_subpackets:
-                    new_packet = Packet()
-                    print("here", new_packet.binary)
-                    decode(new_packet)
-                    tot_processed_packets += 1
-
-        all_packets.append(packet)
-
-
 def main():
+    path = "./data/input_day_16.txt"
+    binary = open_file(path)
 
-    path = './data/input_day_16.txt'
-    path = './data/prova2.txt'
+    idx, packets = find_packets(binary)
 
-    hexadecimal = open_file(path)
-    binary = to_binary(hexadecimal)
+    mode = get_mode()
 
-    print("hexa", hexadecimal)
-    print(binary)
-    print("\n")
+    if mode == 1:
+        print("p1", version_sum)
 
-    # operations(binary)
-
-    packet = Packet()
-    Packet.binary = binary
-
-    decode(packet)
-
-    print(all_packets)
-    for i in all_packets:
-        print(i.number_represented)
-    print('\n')
-    for i in all_packets:
-        print(i.version)
+    elif mode == 2:
+        print("p2", packets)
 
 
 if __name__ == '__main__':
-    all_packets = []
+    versions = []
+    version_sum = 0
     main()
